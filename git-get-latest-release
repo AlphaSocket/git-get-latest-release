@@ -1,0 +1,24 @@
+#!/bin/bash
+
+source "$(git --exec-path)/git-sh-setup"
+
+USAGE="COMMITS"
+function _get_latest_release() {
+    if [[ $# == 1 ]]; then
+        #last_tag=$( curl -SsL $1/releases/latest | awk '/\/tag\//' | head -n 1 | cut -d '"' -f 2 | awk '{n=split($NF,a,"/");print a[n]}' )
+        http_code=$( curl -sLs -o /dev/null -w "%{http_code}" $1/releases/latest )
+        if [ "$http_code" = "200" ]; then
+            last_tag=$( curl -NsISL --raw $1/releases/latest | grep Location | awk '{n=split($NF,a,"/");print a[n]}' )
+            echo $last_tag;
+            exit 0;
+        else
+            echo "Response returned error. Url could be wrong";
+            exit 1;
+        fi
+    else
+        usage
+        exit 64;
+    fi
+}
+
+_get_latest_release $1
